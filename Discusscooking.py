@@ -15,7 +15,8 @@ class Discusscooking():
     self._mongoDriver = mongoDriver
     self.in_processing_urls = 3
   def download(self,url):
-    return self._http_download.download(url)
+    headers = {'User-agent': 'Mozilla/5.0 (X11; U; Linux i686) Gecko/20071127 Firefox/2.0.0.11'}
+    return self._http_download.download(url, headers)
 
   def generateSeedUrls(self):
     url = 'http://www.discusscooking.com/forums/f14'
@@ -29,10 +30,10 @@ class Discusscooking():
   def downloadThreadPage(self, item):
     f = open(item.storing_folder + '/' + item.filename, 'rb')
     content = f.read()
-    htmlPage = BeautifulSoup(content)
+    htmlPage = BeautifulSoup(content, 'html.parser')
 
     links = []
-    for threadUrl in htmlPage.select('table[id="threadslist"] > tr > td > a'):
+    for threadUrl in htmlPage.select('a[id^="thread_title"]'):
       url = threadUrl['href']
       links.append(Crutils.Item(
           self._root_folder + '/threads',
@@ -44,6 +45,7 @@ class Discusscooking():
 
     nextPage = htmlPage.select('a[rel="next"]')
     if nextPage:
+      url = nextPage[0]['href']
       links.append(Crutils.Item(
           self._root_folder + '/thread-pages',
           url.replace('/', ''),
@@ -54,10 +56,11 @@ class Discusscooking():
   def downloadThread(self, item):
     f = open(item.storing_folder + '/' + item.filename, 'rb')
     content = f.read()
-    htmlPage = BeautifulSoup(content)
+    htmlPage = BeautifulSoup(content, 'html.parser')
     nextPage = htmlPage.select('a[rel="next"]')
     links = []
     if nextPage:
+      url = nextPage[0]['href']
       links.append(Crutils.Item(
           self._root_folder + '/threads',
           url.replace('/', ''),

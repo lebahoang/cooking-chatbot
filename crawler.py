@@ -130,42 +130,42 @@ class CrawlerDownloader():
   def save_process_to_file(self):
     #this func saves all processing items (urls) to file then we can "resume" crawling process later
     print('Saving process to file')
-    saving_file = open('saving_items_%s.txt' %self.site.__class__.__name__,'wb')
+    saving_file = open('saving_items_%s.txt' %self.site.__class__.__name__,'w')
     saving_file.write('%s %s\n' %(self.site.__module__,self.site.__class__.__name__))
     saving_file.write('%d\n' %len(self.processing_urls))
     for item in self.processing_urls:
+      saving = {}
       if item.process_func:
-        saving = {}
-        if item.parentId:
+        if hasattr(item, 'parentId'):
           saving = {
-            'storing_folder': item.storing_folder.encode('utf-8'),
-            'filename': item.filename.encode('utf-8'),
-            'url': item.url.encode('utf-8'),
-            'process_func': item.process_func.__name__.encode('utf-8'),
-            'parentId': str(item.parentId).encode('utf-8') 
+            'storing_folder': item.storing_folder,
+            'filename': item.filename,
+            'url': item.url,
+            'process_func': item.process_func.__name__,
+            'parentId': str(item.parentId)
           }
         else:
           saving = {
-            'storing_folder': item.storing_folder.encode('utf-8'),
-            'filename': item.filename.encode('utf-8'),
-            'url': item.url.encode('utf-8'),
-            'process_func': item.process_func.__name__.encode('utf-8'),
+            'storing_folder': item.storing_folder,
+            'filename': item.filename,
+            'url': item.url,
+            'process_func': item.process_func.__name__,
             'parentId': None
           }
       else:
-        if item.parentId:
+        if hasattr(item, 'parentId'):
           saving = {
-            'storing_folder': item.storing_folder.encode('utf-8'),
-            'filename': item.filename.encode('utf-8'),
-            'url': item.url.encode('utf-8'),
+            'storing_folder': item.storing_folder,
+            'filename': item.filename,
+            'url': item.url,
             'process_func': None,
-            'parentId': str(item.parentId).encode('utf-8') 
+            'parentId': str(item.parentId)
           }
         else:
           saving = {
-            'storing_folder': item.storing_folder.encode('utf-8'),
-            'filename': item.filename.encode('utf-8'),
-            'url': item.url.encode('utf-8'),
+            'storing_folder': item.storing_folder,
+            'filename': item.filename,
+            'url': item.url,
             'process_func': None,
             'parentId': None
           }
@@ -173,12 +173,13 @@ class CrawlerDownloader():
     saving_file.close()
   def is_enough(self):
     print('checking')
+    print(self.number_of_processed_urls, self.number_of_exptected_urls)
     if self.number_of_processed_urls >= self.number_of_exptected_urls and reactor.running:
     #if len(self.processing_urls) >= self.number_of_exptected_urls and reactor.running:
       reactor.stop()
   def can_stop_crawler(self):
     stop = task.LoopingCall(self.is_enough)
-    stop.start(30)
+    stop.start(10)
 
 
 if __name__ == "__main__":
@@ -190,6 +191,7 @@ if __name__ == "__main__":
   parser.add_option('-r', '--resume-from-file', dest='resume_from_file', default='' , help='File stores the last state of crawler Ex saving_items_vnwork.txt')
   options, args = parser.parse_args()
 
+  options.number_of_exptected_urls = int(options.number_of_exptected_urls)
   if options.number_of_exptected_urls == 0:
     print('Number of expected urls must be bigger than 0')
     exit()

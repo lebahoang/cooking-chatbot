@@ -14,6 +14,7 @@ class Discusscooking():
     self.seed_urls = self.generateSeedUrls()
     self._mongoDriver = mongoDriver
     self.in_processing_urls = 3
+    self.threadCount = 0
   def download(self,url):
     headers = {'User-agent': 'Mozilla/5.0 (X11; U; Linux i686) Gecko/20071127 Firefox/2.0.0.11'}
     return self._http_download.download(url, headers)
@@ -35,13 +36,17 @@ class Discusscooking():
     links = []
     for threadUrl in htmlPage.select('a[id^="thread_title"]'):
       url = threadUrl['href']
+      path = self._root_folder + '/threads/thread%d' %(self.threadCount)
+      if not os.path.exists(path):
+        os.makedirs(path)
       links.append(Crutils.Item(
-          self._root_folder + '/threads',
+          path,
           url.replace('/', ''),
           url,
           self.downloadThread,
           True
         ))
+      self.threadCount += 1
 
     nextPage = htmlPage.select('a[rel="next"]')
     if nextPage:
@@ -62,7 +67,7 @@ class Discusscooking():
     if nextPage:
       url = nextPage[0]['href']
       links.append(Crutils.Item(
-          self._root_folder + '/threads',
+          item.storing_folder,
           url.replace('/', ''),
           url,
           self.downloadThread,

@@ -179,7 +179,7 @@ class CrawlerDownloader():
       reactor.stop()
   def can_stop_crawler(self):
     stop = task.LoopingCall(self.is_enough)
-    stop.start(10)
+    stop.start(30)
 
 
 if __name__ == "__main__":

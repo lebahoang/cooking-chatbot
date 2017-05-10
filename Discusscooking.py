@@ -20,13 +20,16 @@ class Discusscooking():
     return self._http_download.download(url, headers)
 
   def generateSeedUrls(self):
-    url = 'http://www.discusscooking.com/forums/f14'
-    return [Crutils.Item(
+    urls = ['http://www.discusscooking.com/forums/f14', 'http://www.discusscooking.com/forums/f16/', 'http://www.discusscooking.com/forums/f23/', 'http://www.discusscooking.com/forums/f7/', 'http://www.discusscooking.com/forums/f11/' ]
+    links = []
+    for url in urls:
+      links.append(Crutils.Item(
         self._root_folder + '/thread-pages',
         url.replace('/', ''),
         url,
         self.downloadThreadPage
-      )]
+      ))
+    return links
 
   def downloadThreadPage(self, item):
     f = open(item.storing_folder + '/' + item.filename, 'rb')

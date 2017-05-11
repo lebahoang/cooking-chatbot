@@ -11,6 +11,7 @@ kombu==4.0.2
 numpy==1.12.1
 packaging==16.8
 protobuf==3.2.0
+Pykka==1.2.1
 pymongo==3.4.0
 pyparsing==2.2.0
 pytz==2017.2

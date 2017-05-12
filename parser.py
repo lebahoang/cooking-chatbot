@@ -52,7 +52,7 @@ class DiscussActor(pykka.ThreadingActor):
     try:
       self.parseDiscuss(msg['pathToDiscussionStorage'], msg['discussId'], msg['mongoDB'])
       return 1, None
-    except Exception e:
+    except Exception as e:
       print(e)
       return 0, msg
 

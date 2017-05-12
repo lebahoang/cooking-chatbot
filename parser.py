@@ -49,8 +49,12 @@ class DiscussActor(pykka.ThreadingActor):
   def on_receive(self, msg):
     if 'pathToDiscussionStorage' not in msg or 'discussId' not in msg or 'mongoDB' not in msg:
       raise Exception('Missing pathToDiscussionStorage or discussId or mongoDB')
-    self.parseDiscuss(msg['pathToDiscussionStorage'], msg['discussId'], msg['mongoDB'])
-    return 1
+    try:
+      self.parseDiscuss(msg['pathToDiscussionStorage'], msg['discussId'], msg['mongoDB'])
+      return 1, None
+    except Exception e:
+      print(e)
+      return 0, msg
 
 # class Count(pykka.ThreadingActor):
 #   def __init__(self, name):
@@ -97,7 +101,10 @@ if __name__ == "__main__":
     else:
       j = 0
       for k in range(poolSize):
-        f[k].get()
+        v, msg = f[k].get()
+        if v == 0:
+          print('Check', msg)  
+        
 
 
   for i in range(poolSize):

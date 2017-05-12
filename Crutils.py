@@ -14,10 +14,7 @@ class Item():
       self.url = url
       self.process_func = process_func
       self.finalStop = finalStop
-class MongoItem(Item):
-  def __init__(self,storing_folder, filename, url, process_func, parentId):
-    Item.__init__(self, storing_folder, filename, url, process_func)
-    self.parentId = parentId
+
 class Download():
   def __init__(self):
       pass
@@ -31,23 +28,25 @@ class HttpDownload(Download):
     response = urllib.request.urlopen(request, timeout=20)
     html = response.read()
     return html
+
+
 def getConfig():
   import os
   env = os.environ.get('ENV', 'development')
   if env == 'development':
     return {
       'mongoDb': {
-        'url': 'mongodb://localhost:27017/truyen'
+        'url': 'mongodb://localhost:27017/cooking-chatbot'
       }
     }
   elif env == 'production':
     return {
       'mongoDb': {
-        'url': 'mongodb://localhost:27017/truyen'
+        'url': 'mongodb://35.185.182.229:27017/cooking-chatbot'
       }
     }
   return {
     'mongoDb': {
-      'url': 'mongodb://localhost:27017/truyen'
+      'url': 'mongodb://localhost:27017/cooking-chatbot'
     }
   }

@@ -1,9 +1,9 @@
 import os
 import Crutils
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, element
 class Discusscooking():
-  def __init__(self, root_folder = './cookingdiscussion', domain = 'http://www.discusscooking.com', mongoDriver = None):
-    if not os.path.exists(root_folder):
+  def __init__(self, root_folder = './cookingdiscussion', domain = 'http://www.discusscooking.com', runPreConfig = True):
+    if runPreConfig and not os.path.exists(root_folder):
       os.makedirs(root_folder)
       os.makedirs(root_folder + '/thread-pages')
       os.makedirs(root_folder + '/threads')
@@ -12,7 +12,6 @@ class Discusscooking():
     self._root_folder = root_folder
     self._domain = domain
     self.seed_urls = self.generateSeedUrls()
-    self._mongoDriver = mongoDriver
     self.in_processing_urls = 3
     self.threadCount = 0
   def download(self,url):
@@ -77,4 +76,40 @@ class Discusscooking():
           True
         ))
     return links
+  def parse(self, item):
+    posts = []
+    f = open(item.storing_folder + '/' + item.filename, 'rb')
+    content = f.read()
+    htmlPage = BeautifulSoup(content, 'html.parser')
+    posts = []
+    for div in htmlPage.select('div[id^="post_message"]'):
+      post = {'postId': div['id'].split('_')[-1]}
+      if posts:
+        post['replyTo'] = posts[-1]['postId']
+
+      if len(div.select('a')) > 0:
+        link = div.select('a')[0]
+        replyTo = link['href'].split('#post')[-1]
+        post['replyTo'] = replyTo
+
+      content = []
+      for e in div.contents:
+        if isinstance(e, element.NavigableString):
+          content.append(e.string.strip())
+        else:
+          content.append(e.get_text())
+      post['content'] = ' '.join(content)
+      posts.append(post)
+    return posts
+
+if __name__ == "__main__":
+  x = Discusscooking(runPreConfig=False)
+  y = x.parse(Crutils.Item(
+    '/Users/hoangle/cookingdiscussion/cookingdiscussion/threads/thread1005',
+    'http:www.discusscooking.comforumsf16pan-roasted-salmon-in-white-wine-sauce-83286.html',
+    '',
+    None
+  ))
+  print(y)
+
 

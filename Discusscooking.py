@@ -1,4 +1,5 @@
 import os
+import datetime
 import Crutils
 from bs4 import BeautifulSoup, element
 class Discusscooking():
@@ -14,6 +15,7 @@ class Discusscooking():
     self.seed_urls = self.generateSeedUrls()
     self.in_processing_urls = 3
     self.threadCount = 0
+    self.siteName = 'cookingdiscussion'
   def download(self,url):
     headers = {'User-agent': 'Mozilla/5.0 (X11; U; Linux i686) Gecko/20071127 Firefox/2.0.0.11'}
     return self._http_download.download(url, headers)
@@ -83,30 +85,34 @@ class Discusscooking():
     htmlPage = BeautifulSoup(content, 'html.parser')
     posts = []
     for div in htmlPage.select('div[id^="post_message"]'):
-      post = {'postId': div['id'].split('_')[-1]}
+      post = {'postId': '%s-%s' %(self.siteName, div['id'].split('_')[-1])}
       if posts:
         post['replyTo'] = posts[-1]['postId']
 
-      if len(div.select('a')) > 0:
-        link = div.select('a')[0]
-        replyTo = link['href'].split('#post')[-1]
-        post['replyTo'] = replyTo
+      aLink = div.select('a[rel="nofollow"]')
+      if len(aLink) > 0:
+        link = aLink[0]
+        replyToUrl = link['href'].split('#post')
+        if len(replyToUrl) > 1:
+          replyTo = replyToUrl[-1]
+          post['replyTo'] = '%s-%s' %(self.siteName, replyTo)
 
       content = []
       for e in div.contents:
         if isinstance(e, element.NavigableString):
           content.append(e.string.strip())
         else:
-          content.append(e.get_text())
+          content.append(e.get_text().strip())
       post['content'] = ' '.join(content)
+      post['createdAt'] = datetime.datetime.utcnow()
       posts.append(post)
     return posts
 
 if __name__ == "__main__":
   x = Discusscooking(runPreConfig=False)
   y = x.parse(Crutils.Item(
-    '/Users/hoangle/cookingdiscussion/cookingdiscussion/threads/thread1005',
-    'http:www.discusscooking.comforumsf16pan-roasted-salmon-in-white-wine-sauce-83286.html',
+    '/Users/hoangle/data2/threads/thread3382',
+    'http:www.discusscooking.comforumsf23pannini-press-info-needed-23959.html',
     '',
     None
   ))
